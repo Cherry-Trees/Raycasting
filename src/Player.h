@@ -2,7 +2,6 @@
 #include <math.h>
 #include "globals.h"
 #include "functions.h"
-
 using namespace sf;
 
 class Player {
@@ -14,13 +13,8 @@ class Player {
         Player(float x, float y);
         void update(RenderWindow &window);
 
-
     private:
-        CircleShape sprite;
-        CircleShape dirSprite;
-       // CircleShape rayPoint;
-        CircleShape rayPoints[WINDOW_WIDTH];
-        Vertex rayLines[WINDOW_WIDTH][2];
+        RectangleShape slices[WINDOW_WIDTH];
 
         Vector2i cellStep;
         Vector2i cellIndices;
@@ -34,36 +28,23 @@ class Player {
         float angularSpeed;
         float angle;
         float rayLength;
-        
+        float verticalFov;
+        float verticalDistance;
+        float renderDistance;
 
-        void handleKeyEvents();
+        void handleEvents(RenderWindow &window);
         bool isCollidingWithWall(Vector2f nextPos);
         void render(RenderWindow &window);
-
 };
 
-
-Player::Player(float x, float y) : pos(x, y), dir(0, 1), plane(-0.66f, 0), sprite(WINDOW_CELL_SIZE/2), dirSprite(5.f)
+Player::Player(float x, float y) : pos(x, y), dir(0, 1), plane(-1.f, 0), sprite(WINDOW_CELL_SIZE/2), dirSprite(5.f)
 {
-    moveSpeed=0.5f; 
+    moveSpeed=0.6f; 
     angularSpeed=0.011f;
+    verticalFov = 3.1415f / 4.f;
 
-    sprite.setPosition(x, y);
-    dirSprite.setPosition(x, y + 1);
-
-    sprite.setFillColor(Color::White);
-    dirSprite.setFillColor(Color::Green);
-
-    for (auto &rp : rayPoints)
-    {
-        rp = CircleShape(10.f);
-        rp.setFillColor(Color::Yellow);
-    }
-    for (auto &rl : rayLines)
-    {
-        rl[0].color = Color::Yellow; rl[1].color = Color::Yellow;
-        //rp.setFillColor(Color::Yellow);
-    }
+    verticalDistance = 0.5f * WINDOW_CELL_SIZE / tan(0.5f * verticalFov);
+    renderDistance = 9000;
 }
 
 bool Player::isCollidingWithWall(Vector2f nextPos) 
@@ -112,21 +93,30 @@ bool Player::isCollidingWithWall(Vector2f nextPos)
     return false;
 }
 
-// WASD
-void Player::handleKeyEvents() 
+void Player::handleEvents(RenderWindow &window) 
 {
-    angle = atan2(dir.y, dir.x);
+    angle = atan(dir);
     dr = Vector2f(0, 0);
+
+    Event event;
+    while (window.pollEvent(event)) {
+        switch(event.type)
+        {
+            case Event::Closed:
+            {
+                window.close();
+                break;
+            }
     
     if (Keyboard::isKeyPressed(Keyboard::W)) {dr = -moveSpeed * dir;}
     else if(Keyboard::isKeyPressed(Keyboard::S)) {dr = moveSpeed * dir;}
 
-    if (Keyboard::isKeyPressed(Keyboard::A)) 
+    if (Keyboard::isKeyPressed(Keyboard::D)) 
     {
         dir = Vector2f(cos(angle - angularSpeed), sin(angle - angularSpeed));
         plane = rotate(plane, - angularSpeed);
     }
-    else if (Keyboard::isKeyPressed(Keyboard::D)) 
+    else if (Keyboard::isKeyPressed(Keyboard::A)) 
     {
         dir = Vector2f(cos(angle + angularSpeed), sin(angle + angularSpeed));
         plane = rotate(plane, angularSpeed);
@@ -134,7 +124,7 @@ void Player::handleKeyEvents()
 
     if (!isCollidingWithWall(Vector2f(pos.x + dr.x, pos.y + dr.y))) {pos += dr;}
     if (!isCollidingWithWall(Vector2f(pos.x + dr.x, pos.y))) {pos.x += dr.x;}
-    if (!isCollidingWithWall(Vector2f(pos.x, pos.y + dr.y))) {pos.y += dr.y;} 
+    if (!isCollidingWithWall(Vector2f(pos.x, pos.y + dr.y))) {pos.y += dr.y;}
 }
 
 // DDA
@@ -205,36 +195,25 @@ void Player::render(RenderWindow &window)
                 cellIndices.x += cellStep.x;
                 cellIndices.y += cellStep.y;
             }
-            //Check if ray has hit a wall
             if (map[cellIndices.y][cellIndices.x] == '#') {hit = true;}
         }
+
+        float sliceHeight = round(WINDOW_HEIGHT * verticalDistance / rayLength);
+
+        slices[x] = RectangleShape(Vector2f(1, sliceHeight));
+        slices[x].setFillColor(Color(
+            std::min((renderDistance * 255) / (float)(rayLength*rayLength), 220.f),
+            std::min((renderDistance * 255) / (float)(rayLength*rayLength), 220.f),
+            std::min((renderDistance * 255) / (float)(rayLength*rayLength), 220.f)
+            ));
         
-        float perpWallDist;
-
-        if (!side) {perpWallDist = (ray.x - ds.x);}
-        else {perpWallDist = (ray.y - ds.y);}
-
-
-        rayPoints[x].setPosition(Vector2f(25,25) + pos + rayLength * rayDir);
-        rayLines[x][0] = Vertex(rayStart); rayLines[x][1] = Vertex(Vector2f(25,25) + pos + rayLength * rayDir);
-        window.draw(rayPoints[x]);
-        window.draw(rayLines[x], 2, sf::Lines);
-
-
+        slices[x].setPosition(x, 0.5f * (WINDOW_HEIGHT - sliceHeight));
+        window.draw(slices[x]);
     }
 }
 
-
-
-
-
 void Player::update(RenderWindow &window) 
 {
-    handleKeyEvents();
-    sprite.setPosition(pos);
-    dirSprite.setPosition(pos - 50.f*dir);
+    handleEvents(window);
     render(window);
-
-    window.draw(sprite);
-    window.draw(dirSprite);
 }
