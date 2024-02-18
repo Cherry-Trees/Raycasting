@@ -7,11 +7,8 @@ const int MAP_HEIGHT = 20;
 const int WINDOW_CELL_SIZE = 64;
 const int CELL_SIZE = 8;
 
-const int WINDOW_WIDTH = MAP_WIDTH * WINDOW_CELL_SIZE;
-const int WINDOW_HEIGHT = MAP_HEIGHT * WINDOW_CELL_SIZE;
-
-
-
+const int WINDOW_WIDTH = 1920;
+const int WINDOW_HEIGHT = 1080;
 
 std::string map[MAP_HEIGHT] =
 {
