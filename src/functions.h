@@ -12,3 +12,11 @@ Vector2f rotate(Vector2f A, float theta)
         A.x * sin(theta) + A.y * cos(theta)
     );
 }
+
+float norm(Vector2f A) {return sqrt(A.x*A.x + A.y*A.y);}
+Vector2f unit(Vector2f A) {return A / norm(A);}
+
+int norm(Vector2i A) {return sqrt(A.x*A.x + A.y*A.y);}
+Vector2i unit(Vector2i A) {return A / norm(A);}
+
+float atan(Vector2f A) {return atan2(A.y, A.x);}
