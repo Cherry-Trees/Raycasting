@@ -2,61 +2,25 @@
 #include "globals.h"
 #include "Player.h"
 
-#define PI 3.1415f
-
 int main() {
 
     RenderWindow window(VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "SFML works!");
 
-    Sprite cell_sprite[MAP_WIDTH][MAP_HEIGHT];
-    Texture floor_texture, wall_texture;
-  
-    floor_texture.loadFromFile("res/Floor.png");
-    wall_texture.loadFromFile("res/Wall.png");
+    RectangleShape floor = RectangleShape(Vector2f(WINDOW_WIDTH, WINDOW_HEIGHT/2));
+    floor.setFillColor(Color(10,10,12));
+    floor.setPosition(0, WINDOW_HEIGHT/2);
 
-    for (int i=0; i<MAP_WIDTH; i++) {
-        for (int j=0; j<MAP_HEIGHT; j++) {
-
-            if (map[i][j] == '+')
-                cell_sprite[i][j].setTexture(floor_texture);
-            else
-                cell_sprite[i][j].setTexture(wall_texture);
-                
-            cell_sprite[i][j].setTextureRect(IntRect(0, 0, WINDOW_CELL_SIZE, WINDOW_CELL_SIZE));
-            cell_sprite[i][j].setPosition(j*WINDOW_CELL_SIZE, i*WINDOW_CELL_SIZE);
-        }
-    }
-
+    RectangleShape sky = RectangleShape(Vector2f(WINDOW_WIDTH, WINDOW_HEIGHT/2));
+    sky.setFillColor(Color(67, 105, 202));
+    sky.setPosition(0, 0);
 
     Player p = Player(WINDOW_WIDTH/2, WINDOW_HEIGHT/2);
 
     while (window.isOpen())
-    {
-        Event event;
-        while (window.pollEvent(event))
-        {   
-            switch(event.type)
-            {
-                case Event::Closed:
-                {
-                    window.close();
-                    break;
-                }
-
-            }
-        }
-
-        
-
+    {       
         window.clear();
-
-        for (int i=0; i<MAP_WIDTH; i++) {
-            for (int j=0; j<MAP_HEIGHT; j++) {
-                window.draw(cell_sprite[i][j]);
-            }
-        }
-        //p.move(map, window);
-        //p.update(map, window);
+        window.draw(floor);
+        window.draw(sky);
         p.update(window);
 
         window.display();
