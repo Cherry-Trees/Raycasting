@@ -1,5 +1,5 @@
 # Raycasting
-I build a raycaster using C++ and SFML!! :D
+I built a raycaster using C++ and SFML!! :D
 <br></br>
 
 <p align="center">
